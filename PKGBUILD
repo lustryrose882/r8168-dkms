@@ -8,7 +8,7 @@
 _pkgbase=r8168
 pkgname=${_pkgbase}-dkms
 pkgver=8.053.00
-pkgrel=1
+pkgrel=2
 pkgdesc="A kernel module for Realtek 8168 network cards (DKMS version)"
 url="https://github.com/mtorromeo/$_pkgbase"
 license=("GPL")
@@ -18,12 +18,16 @@ makedepends=('git')
 conflicts=("${_pkgbase}")
 provides=("${_pkgbase}")
 source=("r8168-dkms::git+${url}.git#tag=${pkgver}"
-        'dkms.conf')
+        'dkms.conf'
+        "$_pkgbase-60.patch::https://github.com/mtorromeo/r8168/pull/60.patch")
 sha256sums=('8e9d49c9e1e0e6f5a7f7336e5f7d55fb711e243827027ea5430f03332492ed36'
-            'd37b8acbd4fe06f81538581712a04751a96fc37bad3a4bd3ae8329f8744c49b3')
+            'd37b8acbd4fe06f81538581712a04751a96fc37bad3a4bd3ae8329f8744c49b3'
+            '583274ab545c9fe453a434a5f2b243575a0aeb3bf9c982f524c8efabb2745f84')
 
 prepare() {
-	sed -i 's/strlcpy/strscpy/' "${pkgname}/src/r8168_n.c"
+	cd "${pkgname}"
+	sed -i 's/strlcpy/strscpy/' 'src/r8168_n.c'
+	patch -p1 -i "${srcdir}/$_pkgbase-60.patch"
 }
 
 package() {
