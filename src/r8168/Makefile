@@ -49,147 +49,90 @@ ENABLE_RSS_SUPPORT = n
 ENABLE_LIB_SUPPORT = n
 DISABLE_WOL_SUPPORT = n
 
-ifneq ($(KERNELRELEASE),)
-	obj-m := r8168.o
-	r8168-objs := r8168_n.o r8168_asf.o rtl_eeprom.o rtltool.o
-	ifeq ($(CONFIG_SOC_LAN), y)
-		EXTRA_CFLAGS += -DCONFIG_SOC_LAN
-	endif
-	ifeq ($(ENABLE_FIBER_SUPPORT), y)
-	    r8168-objs += r8168_fiber.o
-		EXTRA_CFLAGS += -DENABLE_FIBER_SUPPORT
-	endif
-	ifeq ($(ENABLE_REALWOW_SUPPORT), y)
-	    r8168-objs += r8168_realwow.o
-		EXTRA_CFLAGS += -DENABLE_REALWOW_SUPPORT
-	endif
-	ifeq ($(ENABLE_DASH_SUPPORT), y)
-	    r8168-objs += r8168_dash.o
-		EXTRA_CFLAGS += -DENABLE_DASH_SUPPORT
-	endif
-	ifeq ($(ENABLE_DASH_PRINTER_SUPPORT), y)
-	    r8168-objs += r8168_dash.o
-		EXTRA_CFLAGS += -DENABLE_DASH_SUPPORT -DENABLE_DASH_PRINTER_SUPPORT
-	endif
-	ifneq ($(ENABLE_RSS_SUPPORT), y)
-		EXTRA_CFLAGS += -DCONFIG_R8168_NAPI
-	endif
-	EXTRA_CFLAGS += -DCONFIG_R8168_VLAN
-	ifeq ($(CONFIG_DOWN_SPEED_100), y)
-		EXTRA_CFLAGS += -DCONFIG_DOWN_SPEED_100
-	endif
-	ifeq ($(CONFIG_ASPM), y)
-		EXTRA_CFLAGS += -DCONFIG_ASPM
-	endif
-	ifeq ($(ENABLE_S5WOL), y)
-		EXTRA_CFLAGS += -DENABLE_S5WOL
-	endif
-	ifeq ($(ENABLE_S5_KEEP_CURR_MAC), y)
-		EXTRA_CFLAGS += -DENABLE_S5_KEEP_CURR_MAC
-	endif
-	ifeq ($(ENABLE_EEE), y)
-		EXTRA_CFLAGS += -DENABLE_EEE
-	endif
-	ifeq ($(ENABLE_S0_MAGIC_PACKET), y)
-		EXTRA_CFLAGS += -DENABLE_S0_MAGIC_PACKET
-	endif
-	ifeq ($(CONFIG_DYNAMIC_ASPM), y)
-		EXTRA_CFLAGS += -DCONFIG_DYNAMIC_ASPM
-	endif
-	ifeq ($(ENABLE_USE_FIRMWARE_FILE), y)
-		r8168-objs += r8168_firmware.o
-		EXTRA_CFLAGS += -DENABLE_USE_FIRMWARE_FILE
-	endif
-	ifeq ($(CONFIG_CTAP_SHORT_OFF), y)
-		EXTRA_CFLAGS += -DCONFIG_CTAP_SHORT_OFF
-	endif
-	ifeq ($(ENABLE_MULTIPLE_TX_QUEUE), y)
-		EXTRA_CFLAGS += -DENABLE_MULTIPLE_TX_QUEUE
-	endif
-	ifeq ($(ENABLE_RSS_SUPPORT), y)
-		r8168-objs += r8168_rss.o
-		EXTRA_CFLAGS += -DENABLE_RSS_SUPPORT
-	endif
-	ifeq ($(ENABLE_LIB_SUPPORT), y)
-		r8168-objs += r8168_lib.o
-		EXTRA_CFLAGS += -DENABLE_LIB_SUPPORT
-	endif
-	ifeq ($(DISABLE_WOL_SUPPORT), y)
-		EXTRA_CFLAGS += -DDISABLE_WOL_SUPPORT
-	endif
-else
-	BASEDIR := /lib/modules/$(shell uname -r)
-	KERNELDIR ?= $(BASEDIR)/build
-	PWD :=$(shell pwd)
-	DRIVERDIR := $(shell find $(BASEDIR)/kernel/drivers/net/ethernet -name realtek -type d)
-	ifeq ($(DRIVERDIR),)
-		DRIVERDIR := $(shell find $(BASEDIR)/kernel/drivers/net -name realtek -type d)
-	endif
-	ifeq ($(DRIVERDIR),)
-		DRIVERDIR := $(BASEDIR)/kernel/drivers/net
-	endif
-	RTKDIR := $(subst $(BASEDIR)/,,$(DRIVERDIR))
+obj-m := r8168.o
+r8168-objs := r8168_n.o r8168_asf.o rtl_eeprom.o rtltool.o
 
-	KERNEL_GCC_VERSION := $(shell cat /proc/version | sed -n 's/.*gcc version \([[:digit:]]\.[[:digit:]]\.[[:digit:]]\).*/\1/p')
-	CCVERSION = $(shell $(CC) -dumpversion)
+ifeq ($(CONFIG_SOC_LAN), y)
+	EXTRA_CFLAGS += -DCONFIG_SOC_LAN
+endif
 
-	KVER = $(shell uname -r)
-	KMAJ = $(shell echo $(KVER) | \
-	sed -e 's/^\([0-9][0-9]*\)\.[0-9][0-9]*\.[0-9][0-9]*.*/\1/')
-	KMIN = $(shell echo $(KVER) | \
-	sed -e 's/^[0-9][0-9]*\.\([0-9][0-9]*\)\.[0-9][0-9]*.*/\1/')
-	KREV = $(shell echo $(KVER) | \
-	sed -e 's/^[0-9][0-9]*\.[0-9][0-9]*\.\([0-9][0-9]*\).*/\1/')
+ifeq ($(ENABLE_FIBER_SUPPORT), y)
+    r8168-objs += r8168_fiber.o
+	EXTRA_CFLAGS += -DENABLE_FIBER_SUPPORT
+endif
 
-	kver_ge = $(shell \
-	echo test | awk '{if($(KMAJ) < $(1)) {print 0} else { \
-	if($(KMAJ) > $(1)) {print 1} else { \
-	if($(KMIN) < $(2)) {print 0} else { \
-	if($(KMIN) > $(2)) {print 1} else { \
-	if($(KREV) < $(3)) {print 0} else { print 1 } \
-	}}}}}' \
-	)
+ifeq ($(ENABLE_REALWOW_SUPPORT), y)
+    r8168-objs += r8168_realwow.o
+	EXTRA_CFLAGS += -DENABLE_REALWOW_SUPPORT
+endif
 
-.PHONY: all
-all: print_vars clean modules install
+ifeq ($(ENABLE_DASH_SUPPORT), y)
+    r8168-objs += r8168_dash.o
+	EXTRA_CFLAGS += -DENABLE_DASH_SUPPORT
+endif
 
-print_vars:
-	@echo
-	@echo "CC: " $(CC)
-	@echo "CCVERSION: " $(CCVERSION)
-	@echo "KERNEL_GCC_VERSION: " $(KERNEL_GCC_VERSION)
-	@echo "KVER: " $(KVER)
-	@echo "KMAJ: " $(KMAJ)
-	@echo "KMIN: " $(KMIN)
-	@echo "KREV: " $(KREV)
-	@echo "BASEDIR: " $(BASEDIR)
-	@echo "DRIVERDIR: " $(DRIVERDIR)
-	@echo "PWD: " $(PWD)
-	@echo "RTKDIR: " $(RTKDIR)
-	@echo
+ifeq ($(ENABLE_DASH_PRINTER_SUPPORT), y)
+    r8168-objs += r8168_dash.o
+	EXTRA_CFLAGS += -DENABLE_DASH_SUPPORT -DENABLE_DASH_PRINTER_SUPPORT
+endif
 
-.PHONY:modules
-modules:
-#ifeq ($(call kver_ge,5,0,0),1)
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
-#else
-#	$(MAKE) -C $(KERNELDIR) SUBDIRS=$(PWD) modules
-#endif
+ifneq ($(ENABLE_RSS_SUPPORT), y)
+	EXTRA_CFLAGS += -DCONFIG_R8168_NAPI
+endif
 
-.PHONY:clean
-clean:
-#ifeq ($(call kver_ge,5,0,0),1)
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
-#else
-#	$(MAKE) -C $(KERNELDIR) SUBDIRS=$(PWD) clean
-#endif
+EXTRA_CFLAGS += -DCONFIG_R8168_VLAN
 
-.PHONY:install
-install:
-#ifeq ($(call kver_ge,5,0,0),1)
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) INSTALL_MOD_DIR=$(RTKDIR) modules_install
-#else
-#	$(MAKE) -C $(KERNELDIR) SUBDIRS=$(PWD) INSTALL_MOD_DIR=$(RTKDIR) modules_install
-#endif
+ifeq ($(CONFIG_DOWN_SPEED_100), y)
+	EXTRA_CFLAGS += -DCONFIG_DOWN_SPEED_100
+endif
 
+ifeq ($(CONFIG_ASPM), y)
+	EXTRA_CFLAGS += -DCONFIG_ASPM
+endif
+
+ifeq ($(ENABLE_S5WOL), y)
+	EXTRA_CFLAGS += -DENABLE_S5WOL
+endif
+
+ifeq ($(ENABLE_S5_KEEP_CURR_MAC), y)
+	EXTRA_CFLAGS += -DENABLE_S5_KEEP_CURR_MAC
+endif
+
+ifeq ($(ENABLE_EEE), y)
+	EXTRA_CFLAGS += -DENABLE_EEE
+endif
+
+ifeq ($(ENABLE_S0_MAGIC_PACKET), y)
+	EXTRA_CFLAGS += -DENABLE_S0_MAGIC_PACKET
+endif
+
+ifeq ($(CONFIG_DYNAMIC_ASPM), y)
+	EXTRA_CFLAGS += -DCONFIG_DYNAMIC_ASPM
+endif
+
+ifeq ($(ENABLE_USE_FIRMWARE_FILE), y)
+	r8168-objs += r8168_firmware.o
+	EXTRA_CFLAGS += -DENABLE_USE_FIRMWARE_FILE
+endif
+
+ifeq ($(CONFIG_CTAP_SHORT_OFF), y)
+	EXTRA_CFLAGS += -DCONFIG_CTAP_SHORT_OFF
+endif
+
+ifeq ($(ENABLE_MULTIPLE_TX_QUEUE), y)
+	EXTRA_CFLAGS += -DENABLE_MULTIPLE_TX_QUEUE
+endif
+
+ifeq ($(ENABLE_RSS_SUPPORT), y)
+	r8168-objs += r8168_rss.o
+	EXTRA_CFLAGS += -DENABLE_RSS_SUPPORT
+endif
+
+ifeq ($(ENABLE_LIB_SUPPORT), y)
+	r8168-objs += r8168_lib.o
+	EXTRA_CFLAGS += -DENABLE_LIB_SUPPORT
+endif
+
+ifeq ($(DISABLE_WOL_SUPPORT), y)
+	EXTRA_CFLAGS += -DDISABLE_WOL_SUPPORT
 endif
